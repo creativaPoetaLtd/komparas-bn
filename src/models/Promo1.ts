@@ -7,9 +7,14 @@ const Promo1Schema = new Schema<IPromo1>({
     offer: { type: String },
     price: { type: Number },
     image: { type: String },
-    product: { 
-        type: Schema.Types.ObjectId, 
-        ref: 'Products',     } 
+    product: {
+        type: Schema.Types.ObjectId,
+        ref: 'Products',
+    },
+    shop: {
+        type: Schema.Types.ObjectId,
+        ref: 'Shop',
+    },
 }, { timestamps: true });
 
 const Promo1 = model<IPromo1>('Promo1', Promo1Schema);

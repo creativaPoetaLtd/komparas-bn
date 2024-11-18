@@ -9,7 +9,11 @@ const DayPhoneSchema = new Schema<IDayPhone>({
     image: { type: String },
     product: { 
         type: Schema.Types.ObjectId, 
-        ref: 'Products',  } 
+        ref: 'Products',  } ,
+    shop: {
+        type: Schema.Types.ObjectId,
+        ref: 'Shop',
+    },
 }, { timestamps: true });
 
 const DayPhone = model<IDayPhone>('DayPhone', DayPhoneSchema);

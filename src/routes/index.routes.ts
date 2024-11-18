@@ -5,13 +5,13 @@ import statusRoutes from "./users/userStatus.routes"
 import categoriesRoutes from "./categories/categories.routes"
 import productsRoutes from "./products/productsCrud.routes"
 import productImageRoutes from "./products/productImage.routes"
-// import newCatrouters from "../controllers/categories/p_category"
 import shopRoutes from "./shop/shop.routes"
 import customerRoutes from "./customer/customer.routes"
 import nativeProductsRoutes from "./products/nativeProducts.routes"
 import comparisionRoutes from "./comparision/comparision.routes"
 import DayphoneRoutes from "./products/offer.routes"
 import applicationRouter from "./job/application.routes";
+import adsRoutes from "./ads/ads.routes";
 
 export default {
     userRoutes,
@@ -26,5 +26,6 @@ export default {
     nativeProductsRoutes,
     comparisionRoutes,
     DayphoneRoutes,
-    applicationRouter
+    applicationRouter,
+    adsRoutes
 };

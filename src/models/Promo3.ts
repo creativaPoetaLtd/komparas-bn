@@ -2,14 +2,19 @@ import { Schema, model, Document } from 'mongoose';
 import { IPromo3 } from '../types/Promo3';
 
 const Promo3Schema = new Schema<IPromo3>({
-    name: { type: String},
-    description: { type: String},
+    name: { type: String },
+    description: { type: String },
     offer: { type: String },
     price: { type: Number },
     image: { type: String },
-    product: { 
-        type: Schema.Types.ObjectId, 
-        ref: 'Products',     } 
+    product: {
+        type: Schema.Types.ObjectId,
+        ref: 'Products',
+    },
+    shop: {
+        type: Schema.Types.ObjectId,
+        ref: 'Shop',
+    },
 }, { timestamps: true });
 
 const Promo3 = model<IPromo3>('Promo3', Promo3Schema);

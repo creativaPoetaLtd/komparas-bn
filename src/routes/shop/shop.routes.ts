@@ -8,7 +8,7 @@ const upload = multer({ storage });
 
 const router = express.Router();
 
-router.get('/shops', authenticate, getAllShops);
+router.get('/shops',authenticate, getAllShops);
 router.get('/shops/:id', getShopById);
 router.post('/shops/add',upload.single('image'), addShop);
 router.put('/shops/:id',upload.single('image'), updateShop);

@@ -7,7 +7,7 @@ import streamifier from "streamifier";
 export const addPromo1 = async (req: Request, res: Response): Promise<void> => {
     try {
         const image = req.file;
-        const { name, description, offer, price, product } = req.body;
+        const { name, description, offer, price, product, shop } = req.body;
 
         if (!image) {
             res.status(400).json({
@@ -44,7 +44,8 @@ export const addPromo1 = async (req: Request, res: Response): Promise<void> => {
                         offer,
                         price,
                         image: cloudinaryResult.secure_url,
-                        product, // Reference to the existing product
+                        product, 
+                        shop,
                     });
 
                     const Promo1ProductImageResult: IPromo1 = await Promo1ProductImage.save();
@@ -81,10 +82,8 @@ export const getPromo1 = async (req: Request, res: Response): Promise<void> => {
 export const updatePromo1 = async (req: Request, res: Response): Promise<void> => {
     try {
         const dayProducts: IPromo1[] = await Promo1.find();
-        const dayProduct: IPromo1 | null = dayProducts[0]; // Get the single item
-
+        const dayProduct: IPromo1 | null = dayProducts[0]; 
         const dimage = req.file;
-
         if (!dimage) {
             res.status(400).json({
                 status: false,
@@ -98,7 +97,8 @@ export const updatePromo1 = async (req: Request, res: Response): Promise<void> =
             dayProduct.description = req.body.description;
             dayProduct.offer = req.body.offer;
             dayProduct.price = req.body.price;
-            dayProduct.product = req.body.product; // Update the product reference
+            dayProduct.product = req.body.product; 
+            dayProduct.shop = req.body.shop;
 
             const result: UploadStream = cloudinaryV2.uploader.upload_stream(
                 { folder: 'product-images' },

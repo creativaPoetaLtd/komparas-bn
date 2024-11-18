@@ -9,7 +9,7 @@ import streamifier from "streamifier";
 export const addDayPhone = async (req: Request, res: Response): Promise<void> => {
     try {
         const image = req.file;
-        const { name, description, offer, price, product } = req.body;
+        const { name, description, offer, price, product, shop } = req.body;
 
         if (!image) {
             res.status(400).json({
@@ -19,8 +19,6 @@ export const addDayPhone = async (req: Request, res: Response): Promise<void> =>
             return;
             
         }
-
-        // Check if other items exist in the table
         const existingItems = await DayPhone.find({});
         if (existingItems.length > 0) {
             res.status(400).json({
@@ -29,7 +27,6 @@ export const addDayPhone = async (req: Request, res: Response): Promise<void> =>
             });
             return;
         }
-
         const result: UploadStream = cloudinaryV2.uploader.upload_stream(
             { folder: 'image' },
             async (error, cloudinaryResult: any) => {
@@ -46,7 +43,8 @@ export const addDayPhone = async (req: Request, res: Response): Promise<void> =>
                         offer,
                         price,
                         image: cloudinaryResult.secure_url,
-                        product, // Reference to the existing product
+                        product,
+                        shop,
                     });
 
                     const Promo1ProductImageResult: IDayPhone = await Promo1ProductImage.save();
@@ -100,7 +98,8 @@ export const updateDayProduct = async (req: Request, res: Response): Promise<voi
             dayProduct.description = req.body.description;
             dayProduct.offer = req.body.offer;
             dayProduct.price = req.body.price;
-            dayProduct.product = req.body.product; // Update the product reference
+            dayProduct.product = req.body.product;
+            dayProduct.shop = req.body.shop;
 
             const result: UploadStream = cloudinaryV2.uploader.upload_stream(
                 { folder: 'product-images' },

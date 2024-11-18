@@ -6,4 +6,5 @@ export interface IPromo1 extends Document {
     price:number;
     image:string;
     product:any;
+    shop: any
 }

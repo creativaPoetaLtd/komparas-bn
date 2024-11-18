@@ -7,7 +7,7 @@ import streamifier from "streamifier";
 export const addPromo3 = async (req: Request, res: Response): Promise<void> => {
     try {
         const image = req.file;
-        const { name, description, offer, price, product } = req.body;
+        const { name, description, offer, price, product, shop } = req.body;
 
         if (!image) {
             res.status(400).json({
@@ -17,7 +17,6 @@ export const addPromo3 = async (req: Request, res: Response): Promise<void> => {
             return;
         }
 
-        // Check if other items exist in the table
         const existingItems = await Promo3.find({});
         if (existingItems.length > 0) {
             res.status(400).json({
@@ -43,7 +42,8 @@ export const addPromo3 = async (req: Request, res: Response): Promise<void> => {
                         offer,
                         price,
                         image: cloudinaryResult.secure_url,
-                        product, // Reference to the existing product
+                        product, 
+                        shop,
                     });
 
                     const Promo3ProductImageResult: IPromo3 = await Promo3ProductImage.save();
@@ -97,7 +97,8 @@ export const updatePromo3 = async (req: Request, res: Response): Promise<void> =
             dayProduct.description = req.body.description;
             dayProduct.offer = req.body.offer;
             dayProduct.price = req.body.price;
-            dayProduct.product = req.body.product; // Update the product reference
+            dayProduct.product = req.body.product;
+            dayProduct.shop = req.body.shop;
 
             const result: UploadStream = cloudinaryV2.uploader.upload_stream(
                 { folder: 'product-images' },
