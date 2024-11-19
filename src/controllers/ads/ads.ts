@@ -124,3 +124,155 @@ export const getAdvertisements = async (req: Request, res: Response): Promise<vo
       });
     }
   }
+
+  export const updateAdvertisement = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const { title, description, ad_type, product_id } = req.body;
+      const imageFile = req.file;
+  
+      const ad = await BunnerAds.findById(id);
+      if (!ad) {
+        res.status(404).json({
+          status: false,
+          message: 'Advertisement not found',
+        });
+        return;
+      }
+  
+      // Validate ad_type
+      if (!['PRODUCT', 'SHOP', 'CATEGORY'].includes(ad_type)) {
+        res.status(400).json({
+          status: false,
+          message: 'Invalid ad type. Allowed values are PRODUCT, SHOP, or CATEGORY.',
+        });
+        return;
+      }
+  
+      let imageUrl = "";
+  
+      if (ad_type !== 'PRODUCT') {
+        if (imageFile) {
+          const result: UploadStream = cloudinaryV2.uploader.upload_stream(
+            { folder: 'ad-images' },
+            async (error, cloudinaryResult: any) => {
+              if (error) {
+                console.error(error);
+                res.status(500).json({
+                  status: false,
+                  message: 'An error occurred while uploading the image to Cloudinary',
+                });
+                return;
+              }
+  
+              imageUrl = cloudinaryResult.secure_url;
+  
+              ad.title = title;
+              ad.description = description;
+              ad.ad_type = ad_type;
+              ad.image = imageUrl;
+  
+              const updatedAd = await ad.save();
+              res.status(200).json({
+                status: true,
+                message: 'Advertisement updated successfully',
+                advertisement: updatedAd,
+              });
+            }
+          );
+  
+          streamifier.createReadStream(imageFile.buffer).pipe(result);
+        } else {
+          ad.title = title;
+          ad.description = description;
+          ad.ad_type = ad_type;
+  
+          const updatedAd = await ad.save();
+          res.status(200).json({
+            status: true,
+            message: 'Advertisement updated successfully',
+            advertisement: updatedAd,
+          });
+        }
+      } else {
+        // Handle ad_type === 'PRODUCT'
+        if (!product_id) {
+          res.status(400).json({
+            status: false,
+            message: 'Product ID is required for PRODUCT advertisements',
+          });
+          return;
+        }
+  
+        const product = await Products.findById(product_id);
+        if (!product) {
+          res.status(404).json({
+            status: false,
+            message: 'Product not found',
+          });
+          return;
+        }
+
+        imageUrl = product.product_image;
+
+        ad.title = title;
+        ad.description = description;
+        ad.ad_type = ad_type;
+        ad.product_id = product_id;
+        ad.image = imageUrl;
+
+        const updatedAd = await ad.save();
+        res.status(200).json({
+          status: true,
+          message: 'Advertisement updated successfully',
+          advertisement: updatedAd,
+        });
+      }
+    }
+    
+    catch (err:any) {
+      console.error(err);
+      res.status(500).json({
+        status: false,
+        message: 'An error occurred while updating the advertisement',
+        error: err.message,
+      });
+    }
+  }
+
+  export const deleteAdvertisement = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      await BunnerAds.findByIdAndDelete(id);
+      res.status(200).json({
+        status: true,
+        message: 'Advertisement deleted successfully',
+      });
+    } catch (err:any) {
+      console.error(err);
+      res.status(500).json({
+        status: false,
+        message: 'An error occurred while deleting the advertisement',
+        error: err.message,
+      });
+    }
+  }
+
+  export const getAdvertisement = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const ad = await BunnerAds.findById(id);
+      res.status(200).json({
+        status: true,
+        message: 'Advertisement retrieved successfully',
+        advertisement: ad,
+      });
+    } catch (err:any) {
+      console.error(err);
+      res.status(500).json({
+        status: false,
+        message: 'An error occurred while retrieving the advertisement',
+        error: err.message,
+      });
+    }
+  }

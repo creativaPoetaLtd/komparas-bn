@@ -4,6 +4,7 @@ interface ICompanyAds extends Document {
   image?: string;
   name: string;
   url: string;
+  title:string;
 }
 
 const bunnerAdsSchema = new Schema<ICompanyAds>({
@@ -18,6 +19,10 @@ const bunnerAdsSchema = new Schema<ICompanyAds>({
     type: String,
     required: true,
   },
+  title:{
+    type:String,
+    required:true
+  }
  
 }, {
   timestamps: true,
