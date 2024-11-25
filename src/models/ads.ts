@@ -40,7 +40,7 @@ const bunnerAdsSchema = new Schema<IBunnerAds>({
   },
   service_id: {
     type: Schema.Types.ObjectId,
-    ref: 'Category',
+    ref: 'Services',
     default: null,
   },
 }, {
