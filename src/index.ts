@@ -16,7 +16,7 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: "https://komparas.netlify.app/",
+    origin: "https://komparas.netlify.app",
     methods: ["GET", "POST"]
   }
 });
@@ -30,7 +30,7 @@ io.on('connection', (socket) => {
 });
 
 const corsOpts = {
-  origin: "https://komparas.netlify.app/", 
+  origin: "https://komparas.netlify.app", 
   methods: ['GET', 'POST', 'DELETE', 'PATCH', 'PUT'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 };
