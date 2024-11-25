@@ -97,6 +97,8 @@ export const addAdvertisement = async (req: Request, res: Response): Promise<voi
         description,
         ad_type,
         product_id,
+        shop_id,
+        service_id,
         image: imageUrl,
       });
 
