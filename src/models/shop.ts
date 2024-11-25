@@ -19,7 +19,6 @@ const ShopSchema: Schema = new Schema({
     email: { type: String, unique: true },
     description: { type: String },
     image: { type: String },
-    // add auto incriment shop number
     shop_number: { type: Number },
     isAccepted: { type: Boolean, default: false },
 }, { timestamps: true });
