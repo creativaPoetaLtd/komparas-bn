@@ -453,7 +453,7 @@ export const updateProduct = async (req: Request, res: Response): Promise<void> 
     product.product_description = req.body.product_description || product.product_description;
     product.our_price = req.body.our_price || product.our_price;
     product.category = req.body.category || product.category;
-    product.product_specifications = product_specifications.length ? product_specifications : product.product_specifications;
+    product.product_specifications = product_specifications?.length ? product_specifications : product.product_specifications;
     product.our_review = our_review.length ? our_review : product.our_review;
     // check if the product has a product number if not generate one
     if (!product.product_number) {
