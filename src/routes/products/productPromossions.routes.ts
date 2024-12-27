@@ -1,6 +1,5 @@
 import { Router } from "express";
 import { addProductPromossion, upadateProductPromossion, deleteProductImage } from "../../controllers/products/productPromossions";
-import { authenticat, isAdminAuthenticat } from "../../middleware/auth/authorization";
 
 const router: Router = Router();
 

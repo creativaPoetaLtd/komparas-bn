@@ -8,6 +8,7 @@ interface IBunnerAds extends Document {
   product_id?: Schema.Types.ObjectId | null;
   shop_id?: Schema.Types.ObjectId | null;
   service_id?: Schema.Types.ObjectId | null;
+  active?: Boolean;
 }
 
 const bunnerAdsSchema = new Schema<IBunnerAds>({
@@ -42,6 +43,10 @@ const bunnerAdsSchema = new Schema<IBunnerAds>({
     type: Schema.Types.ObjectId,
     ref: 'Services',
     default: null,
+  },
+  active: {
+    type: Boolean,
+    default: true
   },
 }, {
   timestamps: true,

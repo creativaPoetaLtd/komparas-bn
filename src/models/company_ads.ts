@@ -5,6 +5,7 @@ interface ICompanyAds extends Document {
   name: string;
   url: string;
   title:string;
+  active?: Boolean;
 }
 
 const bunnerAdsSchema = new Schema<ICompanyAds>({
@@ -22,7 +23,11 @@ const bunnerAdsSchema = new Schema<ICompanyAds>({
   title:{
     type:String,
     required:true
-  }
+  },
+  active: {
+    type: Boolean,
+    default: true
+  },
  
 }, {
   timestamps: true,

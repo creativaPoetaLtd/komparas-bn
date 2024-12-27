@@ -121,6 +121,23 @@ export const addAdvertisement = async (req: Request, res: Response): Promise<voi
 
 export const getAdvertisements = async (req: Request, res: Response): Promise<void> => {
   try {
+    const ads = await BunnerAds.find({ active: true });
+    res.status(200).json({
+      status: true,
+      advertisements: ads,
+    });
+  } catch (err: any) {
+    console.error(err);
+    res.status(500).json({
+      status: false,
+      message: 'An error occurred while fetching advertisements',
+      error: err.message,
+    });
+  }
+}
+
+export const getAdvertisementsAdmin = async (req: Request, res: Response): Promise<void> => {
+  try {
     const ads = await BunnerAds.find();
     res.status(200).json({
       status: true,
@@ -135,6 +152,39 @@ export const getAdvertisements = async (req: Request, res: Response): Promise<vo
     });
   }
 }
+
+export const toggleAdvertActiveStatus = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+
+    const ad = await BunnerAds.findById(id);
+
+    if (!ad) {
+      res.status(404).json({
+        status: false,
+        message: 'Ad not found',
+      });
+      return;
+    }
+
+    ad.active = !ad.active;
+
+    await ad.save();
+
+    res.status(200).json({
+      status: true,
+      message: 'Ad active status toggled successfully',
+      advertisement: ad,
+    });
+  } catch (err: any) {
+    console.error(err);
+    res.status(500).json({
+      status: false,
+      message: 'An error occurred while toggling the ad active status',
+      error: err.message,
+    });
+  }
+};
 
 export const updateAdvertisement = async (req: Request, res: Response): Promise<void> => {
   try {

@@ -59,7 +59,7 @@ export const addCompanyAds = async (req: Request, res: Response): Promise<void> 
   
     export const getCompanyAds = async (req: Request, res: Response): Promise<void> => {
         try {
-        const ads = await Company.find();
+        const ads = await Company.find({ active: true });
         res.status(200).json({
             status: true,
             message: 'Advertisements retrieved successfully',
@@ -167,4 +167,55 @@ export const addCompanyAds = async (req: Request, res: Response): Promise<void> 
             });
         }
     }
+
+    export const toggleAdActiveStatus = async (req: Request, res: Response): Promise<void> => {
+      try {
+        const { id } = req.params;
+    
+        const ad = await Company.findById(id);
+    
+        if (!ad) {
+          res.status(404).json({
+            status: false,
+            message: 'Ad not found',
+          });
+          return;
+        }
+
+        ad.active = !ad.active;
+    
+        await ad.save();
+    
+        res.status(200).json({
+          status: true,
+          message: 'Ad active status toggled successfully',
+          advertisement: ad,
+        });
+      } catch (err: any) {
+        console.error(err);
+        res.status(500).json({
+          status: false,
+          message: 'An error occurred while toggling the ad active status',
+          error: err.message,
+        });
+      }
+    };
+
+    export const getCompanyAdsAdmin = async (req: Request, res: Response): Promise<void> => {
+      try {
+      const ads = await Company.find();
+      res.status(200).json({
+          status: true,
+          message: 'Advertisements retrieved successfully',
+          advertisements: ads,
+      });
+      } catch (err:any) {
+      console.error(err);
+      res.status(500).json({
+          status: false,
+          message: 'An error occurred while retrieving advertisements',
+          error: err.message,
+      });
+      }
+  };
     
