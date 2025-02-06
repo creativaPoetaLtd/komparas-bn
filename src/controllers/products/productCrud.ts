@@ -45,13 +45,24 @@ export const getProducts = async (req: Request, res: Response): Promise<void> =>
       ];
     }
     if (ramValues.length > 0) {
+      const ramRegexArray = ramValues.map(ram => {
+        const numericRam = ram.replace(/\D/g, ''); 
+        return new RegExp(`${numericRam}`, 'i');
+      });
+    
       query['product_specifications'] = {
         $elemMatch: {
           key: { $regex: 'RAM', $options: 'i' },
-          value: { $in: ramValues.map(ram => ram.replace(/\s/g, '')) }
+          value: { $in: ramRegexArray }  
         }
       };
     }
+    
+    
+    
+    
+    
+    
     if (storageValues.length > 0) {
       query['product_specifications'] = {
         $elemMatch: {
