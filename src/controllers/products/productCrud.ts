@@ -47,8 +47,10 @@ export const getProducts = async (req: Request, res: Response): Promise<void> =>
     if (ramValues.length > 0) {
       const ramRegexArray = ramValues.map(ram => {
         const numericRam = ram.replace(/\D/g, ''); 
-        return new RegExp(`${numericRam}`, 'i');
+        return new RegExp(`\\b${numericRam}(?:\\s*GB)?\\b`, 'i'); // "GB" is optional
       });
+      
+      
     
       query['product_specifications'] = {
         $elemMatch: {
@@ -64,13 +66,19 @@ export const getProducts = async (req: Request, res: Response): Promise<void> =>
     
     
     if (storageValues.length > 0) {
+      const storageRegexArray = storageValues.map(storage => {
+        const numericStorage = storage.replace(/\D/g, ''); 
+        return new RegExp(`\\b${numericStorage}(?:\\s*(GB|TB))?\\b`, 'i'); // Matches "128", "128GB", "128 GB", "1TB"
+      });
+    
       query['product_specifications'] = {
         $elemMatch: {
           key: "Ingano y’ububiko/ ubushobozi bwo kubika",
-          value: { $in: storageValues.map(storage => storage.replace(/\s/g, '')) }
+          value: { $in: storageRegexArray }
         }
       };
     }
+    
 
     if (cameraValues.length > 0) {
       query['product_specifications'] = {
