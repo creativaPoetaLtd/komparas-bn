@@ -71,7 +71,10 @@ export const addDayPhone = async (req: Request, res: Response): Promise<void> =>
 
 export const getDayProducts = async (req: Request, res: Response): Promise<void> => {
     try {
-        const dayProducts: IDayPhone[] = await DayPhone.find().populate('product').populate('shop');
+        const dayProducts: IDayPhone[] = await DayPhone.find()
+            .populate('product')
+            .populate({ path: 'shop', match: { _id: { $ne: null } } });
+
         res.status(200).json({ dayProducts });
     } catch (error) {
         res.status(500).send(error);
@@ -99,7 +102,7 @@ export const updateDayProduct = async (req: Request, res: Response): Promise<voi
             dayProduct.offer = req.body.offer;
             dayProduct.price = req.body.price;
             dayProduct.product = req.body.product;
-            dayProduct.shop = req.body.shop;
+            dayProduct.shop = req.body.shop === "NA" ? null : req.body.shop;
             const result: UploadStream = cloudinaryV2.uploader.upload_stream(
                 { folder: 'product-images' },
                 async (error, cloudinaryResult: any) => {
