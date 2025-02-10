@@ -18,6 +18,7 @@ import {
     removeShopFromProduct,
     getSingleShopOnProduct,
     getAllShopsOnProduct,
+    getCheapestAndExpensivePhone
 } from "../../controllers/products/productCrud";
 import { authenticate } from "../../middleware/auth/authorization";
 import multer from "multer";
@@ -42,5 +43,6 @@ router.put('/products/:productId/vendors/:vendorId', updateShopInProduct);
 router.delete('/products/:productId/vendors/:vendorId', removeShopFromProduct);
 router.get('/products/:productId/shops/:vendorId', getSingleShopOnProduct);
 router.get('/products/:productId/shops', getAllShopsOnProduct);
+router.get('/price-range', getCheapestAndExpensivePhone);
 
 export default router

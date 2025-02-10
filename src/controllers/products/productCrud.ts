@@ -21,10 +21,25 @@ export const getProducts = async (req: Request, res: Response): Promise<void> =>
     const colorsValues = req.query.colors ? (req.query.colors as string).split(",") : [];
     let query: any = {
       $or: [
-        { 'vendor_prices.price': { $gte: minPrice, $lte: maxPrice } },
-        { 'vendor_prices.price': { $exists: false } }
+        { 'our_price': { $gte: minPrice, $lte: maxPrice } },
       ]
     };
+    // THIS IS THE ONE WE HAD AND IT MAKES IT WORSE IT RETURNS BASED ON LINETRHOUGH PRICES PRODUCTS
+    // OR EVEN THE PRODUCTS WHITH NO LINETRHOUGH PRICES PRODUCTS WHICH ARE THE MAJORITY
+      // let query: any = {
+      //   $or: [
+      //     { 'vendor_prices.price': { $gte: minPrice, $lte: maxPrice } },
+      //     { 'vendor_prices.price': { $exists: false } }
+      //   ]
+      // };
+
+    // THIS WOULD RETURN THE PRODUCTS BASED ON LINETHROUGH PRICES ONLY
+      // let query: any = {
+      //   $or: [
+      //     { 'vendor_prices.price': { $gte: minPrice, $lte: maxPrice } },
+      //     { 'our_price': { $exists: false } }
+      //   ]
+      // };
     if (categoryIds.length > 0) {
       const parentCategories = await Category.find({ _id: { $in: categoryIds } });
       const childCategoryIds: Types.ObjectId[] = [];
@@ -131,6 +146,38 @@ export const getProducts = async (req: Request, res: Response): Promise<void> =>
     });
   }
 }
+
+export const getCheapestAndExpensivePhone = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const cheapestPhone = await Products.findOne({ our_price: { $exists: true, $ne: null } })
+      .sort({ our_price: 1 })
+      .lean();
+    
+    const expensivePhone = await Products.findOne({ our_price: { $exists: true, $ne: null } })
+      .sort({ our_price: -1 })
+      .lean();
+
+    if (!cheapestPhone || !expensivePhone) {
+      res.status(404).json({
+        status: false,
+        message: "No phones found",
+      });
+      return
+    }
+
+    res.status(200).json({
+      status: true,
+      cheapestPhonePrice: cheapestPhone.our_price,
+      expensivePhonePrice: expensivePhone.our_price
+    });
+  } catch (error) {
+    console.error("Error fetching cheapest and most expensive phones:", error);
+    res.status(500).json({
+      status: false,
+      message: "An error occurred while retrieving the phones",
+    });
+  }
+};
 
 export const addShopToProduct = async (req: Request, res: Response): Promise<void> => {
   try {
