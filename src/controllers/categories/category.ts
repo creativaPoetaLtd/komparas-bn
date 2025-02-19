@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import Category from '../../models/category';
 import { v2 as cloudinaryV2, UploadStream } from "cloudinary";
 import streamifier from "streamifier";
+import { ICategoryLean } from '../../types/category';
 
 export const addCategory = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -69,9 +70,34 @@ export const getAllCategories = async (req: Request, res: Response): Promise<voi
     }
 };
 
+// Recursive function to populate all nested children
+const populateChildren = async (category: ICategoryLean): Promise<ICategoryLean> => {
+    // Fetch the category and populate its immediate children
+    const populatedCategory = await Category.findById(category._id)
+        .populate<{ children: ICategoryLean[] }>('children')
+        .lean<ICategoryLean | null>();
+
+    if (!populatedCategory) {
+        return { ...category, children: [] };
+    }
+
+    // Recursively populate the children of each child
+    populatedCategory.children = await Promise.all(
+        populatedCategory.children.map(populateChildren)
+    );
+
+    return populatedCategory;
+};
+
+// Fetch all parent categories with fully populated nested children
 export const getParentCategories = async (req: Request, res: Response): Promise<void> => {
     try {
-        const parentCategories = await Category.find({ parent_id: null }).populate('children');
+        const parentCategories: ICategoryLean[] = await Category.find({ parent_id: null })
+            .lean<ICategoryLean[]>()
+            .then(async (categories) => {
+                return await Promise.all(categories.map(populateChildren));
+            });
+
         res.status(200).json(parentCategories);
     } catch (error) {
         console.error(error);
