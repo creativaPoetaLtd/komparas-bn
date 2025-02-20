@@ -7,3 +7,5 @@ export interface ICategory extends Document {
     parent_id: number | null;
     children?: ICategory[] | Array<Document<any, any, ICategory>>; // Updated this line
 }
+
+export type ICategoryLean = Omit<ICategory, 'children'> & { children: ICategoryLean[] };
