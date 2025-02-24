@@ -96,22 +96,34 @@ export const getProducts = async (req: Request, res: Response): Promise<void> =>
     
 
     if (cameraValues.length > 0) {
+      const cameraRegexArray = cameraValues.map(camera => {
+        const numericCamera = camera.replace(/\D/g, ''); 
+        return new RegExp(numericCamera, 'i'); // Matches any part of the value
+      });
+    
       query['product_specifications'] = {
         $elemMatch: {
           key: { $regex: 'Foto', $options: 'i' },
-          value: { $in: cameraValues }
+          value: { $regex: cameraRegexArray.map(regex => regex.source).join('|'), $options: 'i' }
         }
       };
     }
-
+    
     if (screenValues.length > 0) {
+      const regexPattern = screenValues
+        .map(screen => screen.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')) 
+        .join('|');
+    
       query['product_specifications'] = {
         $elemMatch: {
-          key: 'Ikirahuri',
-          value: { $in: screenValues }
+          key: { $regex: 'Uburyo screen igaragaza amashusho', $options: 'i' },
+          value: { $regex: regexPattern, $options: 'i' } 
         }
       };
+    
+      console.log("Generated query:", JSON.stringify(query, null, 2));
     }
+    
 
     if (typesValues.length > 0) {
       query['product_specifications'] = {
