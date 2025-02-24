@@ -56,7 +56,8 @@ export const getProducts = async (req: Request, res: Response): Promise<void> =>
     if (vendorIds.length > 0) {
       query['$or'] = [
         { 'vendor_prices.vendor_id': { $in: vendorIds } },
-        { 'vendor_prices.vendor_id': { $exists: false } }
+        // THIS WOULD RETURN ALL PRODUCTS WHICH DOESNT HAVE VENDORS AS WELL(NOT RECOMMENDED)
+        // { 'vendor_prices.vendor_id': { $exists: false } }
       ];
     }
     if (ramValues.length > 0) {
@@ -74,11 +75,6 @@ export const getProducts = async (req: Request, res: Response): Promise<void> =>
         }
       };
     }
-    
-    
-    
-    
-    
     
     if (storageValues.length > 0) {
       const storageRegexArray = storageValues.map(storage => {
@@ -144,7 +140,8 @@ export const getProducts = async (req: Request, res: Response): Promise<void> =>
             }
           }
         },
-        { 'vendor_prices.colors': { $exists: false } }
+        //THIS WOULD RETURN ALL RPODUCTS WITH NO VENDORS(WHICH ARE THE MAJORITY). NEEDS TO BE CHECKED ON LATER WHEN VENDORS ARE PRESENT
+        // { 'vendor_prices.colors': { $exists: false } }
       ];
     }
 
