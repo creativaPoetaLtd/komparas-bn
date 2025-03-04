@@ -7,6 +7,7 @@ import { v2 as cloudinaryV2, UploadStream } from "cloudinary";
 import streamifier from "streamifier";
 import Shop from "../../models/shop";
 import { Types } from 'mongoose';
+
 export const getProducts = async (req: Request, res: Response): Promise<void> => {
   try {
     const minPrice = req.query.minPrice ? parseInt(req.query.minPrice as string) : 0;
@@ -19,27 +20,18 @@ export const getProducts = async (req: Request, res: Response): Promise<void> =>
     const screenValues = req.query.screen ? (req.query.screen as string).split(",") : [];
     const typesValues = req.query.types ? (req.query.types as string).split(",") : [];
     const colorsValues = req.query.colors ? (req.query.colors as string).split(",") : [];
+
+    // Pagination parameters
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 20;
+    const skip = (page - 1) * limit;
+
     let query: any = {
       $or: [
         { 'our_price': { $gte: minPrice, $lte: maxPrice } },
       ]
     };
-    // THIS IS THE ONE WE HAD AND IT MAKES IT WORSE IT RETURNS BASED ON LINETRHOUGH PRICES PRODUCTS
-    // OR EVEN THE PRODUCTS WHITH NO LINETRHOUGH PRICES PRODUCTS WHICH ARE THE MAJORITY
-      // let query: any = {
-      //   $or: [
-      //     { 'vendor_prices.price': { $gte: minPrice, $lte: maxPrice } },
-      //     { 'vendor_prices.price': { $exists: false } }
-      //   ]
-      // };
 
-    // THIS WOULD RETURN THE PRODUCTS BASED ON LINETHROUGH PRICES ONLY
-      // let query: any = {
-      //   $or: [
-      //     { 'vendor_prices.price': { $gte: minPrice, $lte: maxPrice } },
-      //     { 'our_price': { $exists: false } }
-      //   ]
-      // };
     if (categoryIds.length > 0) {
       const parentCategories = await Category.find({ _id: { $in: categoryIds } });
       const childCategoryIds: Types.ObjectId[] = [];
@@ -56,32 +48,29 @@ export const getProducts = async (req: Request, res: Response): Promise<void> =>
     if (vendorIds.length > 0) {
       query['$or'] = [
         { 'vendor_prices.vendor_id': { $in: vendorIds } },
-        // THIS WOULD RETURN ALL PRODUCTS WHICH DOESNT HAVE VENDORS AS WELL(NOT RECOMMENDED)
-        // { 'vendor_prices.vendor_id': { $exists: false } }
       ];
     }
+
     if (ramValues.length > 0) {
       const ramRegexArray = ramValues.map(ram => {
-        const numericRam = ram.replace(/\D/g, ''); 
-        return new RegExp(`\\b${numericRam}(?:\\s*GB)?\\b`, 'i'); // "GB" is optional
+        const numericRam = ram.replace(/\D/g, '');
+        return new RegExp(`\\b${numericRam}(?:\\s*GB)?\\b`, 'i');
       });
-      
-      
-    
+
       query['product_specifications'] = {
         $elemMatch: {
           key: { $regex: 'RAM', $options: 'i' },
-          value: { $in: ramRegexArray }  
+          value: { $in: ramRegexArray }
         }
       };
     }
-    
+
     if (storageValues.length > 0) {
       const storageRegexArray = storageValues.map(storage => {
-        const numericStorage = storage.replace(/\D/g, ''); 
-        return new RegExp(`\\b${numericStorage}(?:\\s*(GB|TB))?\\b`, 'i'); // Matches "128", "128GB", "128 GB", "1TB"
+        const numericStorage = storage.replace(/\D/g, '');
+        return new RegExp(`\\b${numericStorage}(?:\\s*(GB|TB))?\\b`, 'i');
       });
-    
+
       query['product_specifications'] = {
         $elemMatch: {
           key: "Ingano y’ububiko/ ubushobozi bwo kubika",
@@ -89,14 +78,13 @@ export const getProducts = async (req: Request, res: Response): Promise<void> =>
         }
       };
     }
-    
 
     if (cameraValues.length > 0) {
       const cameraRegexArray = cameraValues.map(camera => {
-        const numericCamera = camera.replace(/\D/g, ''); 
-        return new RegExp(numericCamera, 'i'); // Matches any part of the value
+        const numericCamera = camera.replace(/\D/g, '');
+        return new RegExp(numericCamera, 'i');
       });
-    
+
       query['product_specifications'] = {
         $elemMatch: {
           key: { $regex: 'Foto', $options: 'i' },
@@ -104,22 +92,19 @@ export const getProducts = async (req: Request, res: Response): Promise<void> =>
         }
       };
     }
-    
+
     if (screenValues.length > 0) {
       const regexPattern = screenValues
-        .map(screen => screen.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')) 
+        .map(screen => screen.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'))
         .join('|');
-    
+
       query['product_specifications'] = {
         $elemMatch: {
           key: { $regex: 'Uburyo screen igaragaza amashusho', $options: 'i' },
-          value: { $regex: regexPattern, $options: 'i' } 
+          value: { $regex: regexPattern, $options: 'i' }
         }
       };
-    
-      console.log("Generated query:", JSON.stringify(query, null, 2));
     }
-    
 
     if (typesValues.length > 0) {
       query['product_specifications'] = {
@@ -140,13 +125,20 @@ export const getProducts = async (req: Request, res: Response): Promise<void> =>
             }
           }
         },
-        //THIS WOULD RETURN ALL RPODUCTS WITH NO VENDORS(WHICH ARE THE MAJORITY). NEEDS TO BE CHECKED ON LATER WHEN VENDORS ARE PRESENT
-        // { 'vendor_prices.colors': { $exists: false } }
       ];
     }
 
-    const products: IProducts[] = await Products.find(query).maxTimeMS(30000);
-    res.status(200).json({ products });
+    const totalProducts = await Products.countDocuments(query);
+    const totalPages = Math.ceil(totalProducts / limit);
+
+    const products = await Products.find(query).skip(skip).limit(limit).maxTimeMS(30000);
+
+    res.status(200).json({
+      products,
+      currentPage: page,
+      totalPages,
+      totalProducts,
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({
@@ -154,7 +146,7 @@ export const getProducts = async (req: Request, res: Response): Promise<void> =>
       message: "An error occurred while retrieving the products",
     });
   }
-}
+};
 
 export const getCheapestAndExpensivePhone = async (req: Request, res: Response): Promise<void> => {
   try {
