@@ -20,6 +20,7 @@ export const getProducts = async (req: Request, res: Response): Promise<void> =>
     const screenValues = req.query.screen ? (req.query.screen as string).split(",") : [];
     const typesValues = req.query.types ? (req.query.types as string).split(",") : [];
     const colorsValues = req.query.colors ? (req.query.colors as string).split(",") : [];
+    const sortOrder = req.query.sortOrder as string;
 
     // Pagination parameters
     const page = parseInt(req.query.page as string) || 1;
@@ -128,10 +129,21 @@ export const getProducts = async (req: Request, res: Response): Promise<void> =>
       ];
     }
 
+    let sortCriteria = {};
+    if (sortOrder === 'ascending') {
+      sortCriteria = { product_name: 1 };
+    } else if (sortOrder === 'descending') {
+      sortCriteria = { product_name: -1 };
+    } else if (sortOrder === 'cheaper') {
+      sortCriteria = { our_price: 1 };
+    } else if (sortOrder === 'expensive') {
+      sortCriteria = { our_price: -1 };
+    }
+
     const totalProducts = await Products.countDocuments(query);
     const totalPages = Math.ceil(totalProducts / limit);
 
-    const products = await Products.find(query).skip(skip).limit(limit).maxTimeMS(30000);
+    const products = await Products.find(query).sort(sortCriteria).skip(skip).limit(limit).maxTimeMS(30000);
 
     res.status(200).json({
       products,
