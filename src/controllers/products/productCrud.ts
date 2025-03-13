@@ -867,6 +867,76 @@ export const getProductsByCategory = async (req: Request, res: Response): Promis
   }
 };
 
+export const getRecommendedProducts = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { productId } = req.params;
+
+    const product = await Products.findById(productId);
+    if (!product) {
+      res.status(404).json({ status: false, message: 'Product not found' });
+      return;
+    }
+
+    let categoryIdsToSearch: string[] = [product.category.toString()];
+
+    // Find the category
+    const category = await Category.findById(product.category);
+    if (!category) {
+      res.status(404).json({ status: false, message: 'Category not found' });
+      return;
+    }
+
+    // If this category is a child, fetch its parent's child categories
+    if (category.parent_id) {
+      const parentCategory = await Category.findById(category.parent_id);
+      if (parentCategory && Array.isArray(parentCategory.children)) {
+        categoryIdsToSearch = [...categoryIdsToSearch, ...parentCategory.children.map(id => id.toString())];
+      }
+    }
+
+    // Fetch two products from the same or sibling categories, excluding the given product
+    let sameCategoryProducts = await Products.find({
+      category: { $in: categoryIdsToSearch },
+      _id: { $ne: productId },
+    }).limit(2);
+    
+    // If not enough products from same category, fetch additional ones from different categories
+    if (sameCategoryProducts.length < 2) {
+      const additionalProductsNeeded = 2 - sameCategoryProducts.length;
+      const moreProducts = await Products.find({
+        category: { $nin: categoryIdsToSearch },
+        _id: { $ne: productId },
+      }).limit(additionalProductsNeeded);
+    
+      sameCategoryProducts = [...sameCategoryProducts, ...moreProducts];
+    }
+    
+    // Fetch 3 random products from different categories
+    const differentCategoryProducts = await Products.aggregate([
+      { $match: { category: { $nin: categoryIdsToSearch }, _id: { $ne: productId } } },
+      { $sample: { size: 3 } },
+    ]);
+    
+    let recommendedProducts = [...sameCategoryProducts, ...differentCategoryProducts];
+    
+    // Remove duplicate products(if available) based on their _id
+    recommendedProducts = recommendedProducts.filter((value, index, self) => 
+      index === self.findIndex((t) => (
+        t._id.toString() === value._id.toString()
+      ))
+    );
+
+    res.status(200).json({ recommendedProducts });
+    return;
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      status: false,
+      message: 'An error occurred while fetching recommended products',
+    });
+  }
+};
+
 export const removeProductSpecification = async (req: Request, res: Response): Promise<void> => {
   try {
     const productId = req.params.productId;
