@@ -160,6 +160,26 @@ export const getProducts = async (req: Request, res: Response): Promise<void> =>
   }
 };
 
+export const getRecentProducts = async (req: Request, res: Response): Promise<void> => {
+  try {
+    // Fetch the 7 most recent products added
+    const recentProducts = await Products.find()
+      .sort({ createdAt: -1 })
+      .limit(7);
+
+    res.status(200).json({
+      success: true,
+      products: recentProducts,
+    });
+  } catch (error) {
+    console.error("Error fetching recent products:", error);
+    res.status(500).json({
+      success: false,
+      message: "An error occurred while retrieving the recent products.",
+    });
+  }
+};
+
 export const getCheapestAndExpensivePhone = async (req: Request, res: Response): Promise<void> => {
   try {
     const cheapestPhone = await Products.findOne({ our_price: { $exists: true, $ne: null } })

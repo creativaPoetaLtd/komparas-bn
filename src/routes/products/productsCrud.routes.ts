@@ -1,7 +1,8 @@
 import { Router } from "express";
 
 import { 
-    getProducts, 
+    getProducts,
+    getRecentProducts,
     addProduct,
     deleteProduct,
     getProductById,
@@ -27,6 +28,7 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage });
 const router : Router = Router()
 router.get("/products", getProducts)
+router.get("/products/recent", getRecentProducts)
 router.post("/products/:productId/add-shop", addShopToProduct)
 router.get("/products/category", getAllProductsWithCategoryName)
 router.get("/products/images", getProductsWithImages)
