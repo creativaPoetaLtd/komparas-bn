@@ -1,12 +1,14 @@
 import { Router } from "express";
 
 import { 
-    getProducts, 
+    getProducts,
+    getRecentProducts,
     addProduct,
     deleteProduct,
     getProductById,
     getProductsWithImages,
     getProductsByCategory,
+    getRecommendedProducts,
     getSingleProductWithImages,
     updateProduct,
     removeProductSpecification,
@@ -26,6 +28,7 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage });
 const router : Router = Router()
 router.get("/products", getProducts)
+router.get("/products/recent", getRecentProducts)
 router.post("/products/:productId/add-shop", addShopToProduct)
 router.get("/products/category", getAllProductsWithCategoryName)
 router.get("/products/images", getProductsWithImages)
@@ -37,6 +40,7 @@ router.put("/products/:productId",upload.single('product_image'), updateProduct)
 router.delete("/products/:productId", deleteProduct)
 router.get('/products/:category_id', getProductsByCategory);
 router.get('/products/category/:category_name', getProductsByCategory);
+router.get('/products/:productId/recommended', getRecommendedProducts);
 router.delete('/products/:productId/specifications/:specificationId', removeProductSpecification);
 router.get('/products/vendor/:vendorId', getProductsByVendor);
 router.put('/products/:productId/vendors/:vendorId', updateShopInProduct);
