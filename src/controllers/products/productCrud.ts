@@ -526,13 +526,7 @@ export const updateProduct = async (req: Request, res: Response): Promise<void> 
       });
       return;
     }
-    if (!product) {
-      res.status(404).json({
-        status: false,
-        message: 'Product not found',
-      });
-      return;
-    }
+    
     const imageFile = req.file;
     const product_specifications:Array<{
       key: string;
@@ -541,19 +535,25 @@ export const updateProduct = async (req: Request, res: Response): Promise<void> 
       key: spec?.key?.toString(),
       value: spec?.value?.toString()
     }));
-    const our_review:Array<{
-      key: string;
-      value: string
-    }> = req.body.our_review?.map((rev:any) => ({
-      key: rev?.key?.toString(),
-      value: rev?.value?.toString()
-    }));
+
+    // our_review is being edited key by key
+    const updatedReview = req.body.our_review?.[0];
+
+    if (updatedReview && updatedReview.key) {
+      product.our_review = (product.our_review || []).map((review) =>
+        review.key === updatedReview.key ? { ...review, value: updatedReview.value } : review
+      );
+
+      if (!product.our_review.some((review) => review.key === updatedReview.key)) {
+        product.our_review.push(updatedReview);
+      }
+    }
+
     product.product_name = req.body.product_name || product.product_name;
     product.product_description = req.body.product_description || product.product_description;
     product.our_price = req.body.our_price || product.our_price;
     product.category = req.body.category || product.category;
     product.product_specifications = product_specifications?.length ? product_specifications : product.product_specifications;
-    product.our_review = our_review.length ? our_review : product.our_review;
     // check if the product has a product number if not generate one
     if (!product.product_number) {
       product.product_number = Math.floor(Math.random() * 1000000);
