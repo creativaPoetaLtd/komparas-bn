@@ -32,7 +32,7 @@ const uploadImagesToCloudinary = (files: Express.Multer.File[]): Promise<string[
   
   export const createBlog = async (req: Request, res: Response): Promise<void> => {
     try {
-      const { title, content } = req.body;
+      const { title, content,language } = req.body;
       if (!req.files || !(req.files as { [fieldname: string]: Express.Multer.File[] })['blogImage']) {
         res.status(400).json({
           status: false,
@@ -67,6 +67,7 @@ const uploadImagesToCloudinary = (files: Express.Multer.File[]): Promise<string[
               title,
               blogImage: result?.secure_url,
               content,
+              language,
               contentPhotos: contentPhotosUrls,
             });
   
@@ -251,6 +252,7 @@ export const addComment = async (req: Request, res: Response): Promise<void> => 
   try {
     const { blogId } = req.params;
     const { name, email, comment } = req.body;
+    const date = new Date();
 
     const blog = await Blog.findById(blogId);
     if (!blog) {
@@ -261,7 +263,7 @@ export const addComment = async (req: Request, res: Response): Promise<void> => 
       return;
     }
 
-    blog.comments.push({ name, email, comment });
+    blog.comments.push({ name, email, comment,date });
     await blog.save();
 
     res.status(200).json({

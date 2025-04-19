@@ -16,7 +16,7 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: "https://komparas.netlify.app",
+    origin: ["https://komparas.netlify.app","http://localhost:5173"],
     methods: ["GET", "POST"]
   }
 });
@@ -30,7 +30,7 @@ io.on('connection', (socket) => {
 });
 
 const corsOpts = {
-  origin: "https://komparas.netlify.app",
+  origin: ["https://komparas.netlify.app","http://localhost:5174"],
   methods: ['GET', 'POST', 'DELETE', 'PATCH', 'PUT'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 };
@@ -60,6 +60,7 @@ app.use(allRoutes.comparisionRoutes);
 app.use(allRoutes.DayphoneRoutes);
 app.use(allRoutes.applicationRouter);
 app.use(allRoutes.adsRoutes);
+app.use(allRoutes.blogRoutes);
 app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(docs));
 
 const port = process.env.PORT || 10000;
