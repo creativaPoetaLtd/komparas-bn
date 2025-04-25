@@ -30,7 +30,7 @@ io.on('connection', (socket) => {
 });
 
 const corsOpts = {
-  origin: ["https://komparas.netlify.app","http://localhost:5174"],
+  origin: ["https://komparas.netlify.app","http://localhost:5173"],
   methods: ['GET', 'POST', 'DELETE', 'PATCH', 'PUT'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 };

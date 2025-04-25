@@ -138,10 +138,21 @@ export const getBlogs = async (req: Request, res: Response): Promise<void> => {
 export const editBlog = async (req: Request, res: Response): Promise<void> => {
     try {
       const { blogId } = req.params;
-      const { title, content, comments } = req.body;
+      const { title, content, comments, language, existingContentPhotos } = req.body;
       const files = req.files as { [fieldname: string]: Express.Multer.File[] } | undefined;
       const imageFile = files?.['blogImage']?.[0];
       const contentPhotosFiles = files?.['contentPhotos'] || [];
+  
+      // Parse existing content photos from JSON string, if provided
+      let parsedExistingPhotos: string[] = [];
+      if (existingContentPhotos) {
+        try {
+          parsedExistingPhotos = JSON.parse(existingContentPhotos);
+        } catch (e) {
+          console.error("Error parsing existingContentPhotos:", e);
+          // If parsing fails, continue with empty array
+        }
+      }
   
       const blog = await Blog.findById(blogId);
       if (!blog) {
@@ -153,6 +164,7 @@ export const editBlog = async (req: Request, res: Response): Promise<void> => {
       }
   
       if (imageFile) {
+        // If a new blog image was uploaded
         const uploadStream = cloudinary.uploader.upload_stream(
           { folder: 'blog-images' },
           async (error, result) => {
@@ -163,13 +175,21 @@ export const editBlog = async (req: Request, res: Response): Promise<void> => {
                 message: 'An error occurred while uploading the image to Cloudinary',
               });
             } else {
+              // Upload any new content photos
               const contentPhotosUrls = await uploadImagesToCloudinary(contentPhotosFiles);
-  
+              
+              // Update blog data
               blog.blogImage = result?.secure_url || '';
               blog.title = title;
               blog.content = content;
-              blog.contentPhotos = contentPhotosUrls;
-              blog.comments = comments;
+              blog.language = language;
+              
+              // Combine existing photos with new photos
+              blog.contentPhotos = [...parsedExistingPhotos, ...contentPhotosUrls];
+              
+              if (comments) {
+                blog.comments = comments;
+              }
   
               try {
                 const updatedBlog = await blog.save();
@@ -187,18 +207,29 @@ export const editBlog = async (req: Request, res: Response): Promise<void> => {
             }
           }
         );
-  
         streamifier.createReadStream(imageFile.buffer).pipe(uploadStream);
       } else {
+        // No new blog image, just update other fields
+        // Upload any new content photos
         const contentPhotosUrls = await uploadImagesToCloudinary(contentPhotosFiles);
-  
+        
+        // Update blog data
         blog.title = title;
         blog.content = content;
-        blog.contentPhotos = contentPhotosUrls;
-        blog.comments = comments;
+        if (language) {
+          blog.language = language;
+        }
+        
+        // Combine existing photos with new photos
+        blog.contentPhotos = [...parsedExistingPhotos, ...contentPhotosUrls];
+        
+        if (comments) {
+          blog.comments = comments;
+        }
   
         try {
           const updatedBlog = await blog.save();
+          
           res.status(200).json({
             message: 'Blog post updated successfully',
             blog: updatedBlog,
@@ -279,3 +310,20 @@ export const addComment = async (req: Request, res: Response): Promise<void> => 
     });
   }
 };
+
+export const getBlogComments = async (req: Request, res: Response) => {
+    try {
+      const blogId = req.params.id;
+  
+      const blog = await Blog.findById(blogId).select('comments');
+  
+      if (!blog) {
+        return res.status(404).json({ message: 'Blog not found' });
+      }
+  
+      res.status(200).json(blog.comments);
+    } catch (error) {
+      res.status(500).json({ message: 'Server error', error: (error as Error).message });
+    }
+  };
+  
