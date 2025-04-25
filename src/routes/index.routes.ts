@@ -12,6 +12,7 @@ import comparisionRoutes from "./comparision/comparision.routes"
 import DayphoneRoutes from "./products/offer.routes"
 import applicationRouter from "./job/application.routes";
 import adsRoutes from "./ads/ads.routes";
+import blogRoutes from "./blog/blog.routes";
 
 export default {
     userRoutes,
@@ -27,5 +28,6 @@ export default {
     comparisionRoutes,
     DayphoneRoutes,
     applicationRouter,
-    adsRoutes
+    adsRoutes,
+    blogRoutes
 };
