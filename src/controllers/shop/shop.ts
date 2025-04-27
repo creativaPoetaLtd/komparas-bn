@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import Shop from '../../models/shop';
+import Products from "../../models/products";
 import { IShop } from '../../types/shop';
 import { v2 as cloudinaryV2, UploadStream } from "cloudinary";
 import streamifier from "streamifier";
@@ -146,10 +147,20 @@ export const getShopById = async (req: Request, res: Response): Promise<void> =>
 
 export const deleteShop = async (req: Request, res: Response): Promise<void> => {
     try {
+        const shopId = req.params.id;
         const deletedShop: IShop | null = await Shop.findByIdAndDelete(req.params.id);
         if (deletedShop) {
+            await Products.updateMany(
+              { vendors: shopId },
+              { $pull: { vendors: shopId } }
+            );
+
+            await Products.updateMany(
+              { 'vendor_prices.vendor_id': shopId },
+              { $pull: { vendor_prices: { vendor_id: shopId } } }
+            );
             res.status(200).json(deletedShop);
-        } else {
+          } else {
             res.status(404).send('Shop not found');
         }
     } catch (error) {
