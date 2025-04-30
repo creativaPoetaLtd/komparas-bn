@@ -2,7 +2,7 @@ import { Router } from "express";
 import multer from "multer";
 import { addAdvertisement, getAdvertisements, updateAdvertisement, deleteAdvertisement, getAdvertisement, getAdvertisementsAdmin, toggleAdvertActiveStatus } from "../../controllers/ads/ads";
 import { addCompanyAds, getCompanyAds, updateCompanyAds, deleteCompanyAds, getCompanyAd, toggleAdActiveStatus, getCompanyAdsAdmin } from "../../controllers/ads/company_ads";
-import { addService, getServices, deleteServices, getService } from "../../controllers/offers/Service";
+import { addService, getServices, deleteServices, getService, updateService } from "../../controllers/offers/Service";
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 const router : Router = Router()
@@ -21,6 +21,7 @@ router.delete("/ads/:id", deleteAdvertisement)
 router.delete("/company-ads/:id", deleteCompanyAds)
 router.put('/company-ads/:id/toggle-active', toggleAdActiveStatus);
 router.post("/services/add", upload.single('image'), addService)
+router.put("/services/:id", upload.single('image'), updateService)
 router.get("/services", getServices)
 router.get("/services/:id", getService)
 router.delete("/services/:id", deleteServices)
