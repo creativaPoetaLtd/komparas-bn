@@ -70,6 +70,24 @@ export const getAllCategories = async (req: Request, res: Response): Promise<voi
     }
 };
 
+export const getNestedCategories = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const rootCategories = await Category.find({ parent_id: null })
+        .populate({
+          path: 'children',
+          populate: {
+            path: 'children',
+          }
+        })
+        .sort({ name: 1 });
+        
+      res.status(200).json(rootCategories);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Server error' });
+    }
+};
+
 // Recursive function to populate all nested children
 const populateChildren = async (category: ICategoryLean): Promise<ICategoryLean> => {
     // Fetch the category and populate its immediate children

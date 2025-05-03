@@ -8,6 +8,31 @@ import streamifier from "streamifier";
 import Shop from "../../models/shop";
 import { Types } from 'mongoose';
 
+async function getAllDescendantCategoryIds(categoryIds: Types.ObjectId[]): Promise<Types.ObjectId[]> {
+  const allCategoryIds = [...categoryIds];
+  const processedIds = new Set(categoryIds.map(id => id.toString()));
+  
+  let queue = [...categoryIds];
+  
+  while (queue.length > 0) {
+    const currentBatch = [...queue];
+    queue = [];
+    
+    const children = await Category.find({ parent_id: { $in: currentBatch } });
+    
+    for (const child of children) {
+      const childIdStr = child._id.toString();
+      if (!processedIds.has(childIdStr)) {
+        processedIds.add(childIdStr);
+        allCategoryIds.push(child._id);
+        queue.push(child._id);
+      }
+    }
+  }
+  
+  return allCategoryIds;
+}
+
 export const getProducts = async (req: Request, res: Response): Promise<void> => {
   try {
     const minPrice = req.query.minPrice ? parseInt(req.query.minPrice as string) : 0;
@@ -34,15 +59,7 @@ export const getProducts = async (req: Request, res: Response): Promise<void> =>
     };
 
     if (categoryIds.length > 0) {
-      const parentCategories = await Category.find({ _id: { $in: categoryIds } });
-      const childCategoryIds: Types.ObjectId[] = [];
-      for (const parentCategory of parentCategories) {
-        const children = await Category.find({ parent_id: parentCategory._id });
-        children.forEach(child => {
-          childCategoryIds.push(child._id);
-        });
-      }
-      const allCategoryIds = [...categoryIds, ...childCategoryIds];
+      const allCategoryIds = await getAllDescendantCategoryIds(categoryIds);
       query.category = { $in: allCategoryIds };
     }
 

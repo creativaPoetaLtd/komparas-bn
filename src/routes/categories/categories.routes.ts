@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import {authenticate } from '../../middleware/auth/authorization';
 
-import { addCategory, getAllCategories, getParentCategories, deleteCategory, getCategoryByNameOrID, updateCategory } from '../../controllers/categories/category';
+import { addCategory, getAllCategories, getParentCategories, deleteCategory, getCategoryByNameOrID, updateCategory, getNestedCategories } from '../../controllers/categories/category';
 import multer from "multer";
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
@@ -9,6 +9,7 @@ const router: Router = Router();
 
 router.post("/category/add", upload.single('image'), addCategory);
 router.get("/categories/all", getAllCategories);
+router.get("/categories/nested", getNestedCategories);
 router.get("/categories/parents", getParentCategories);
 router.delete("/categories/:category_id", deleteCategory);
 router.get("/categories/:category", getCategoryByNameOrID);
